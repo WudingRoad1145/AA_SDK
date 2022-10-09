@@ -4,15 +4,20 @@ import { ethers } from 'hardhat'
 import { HttpRpcClient } from '@account-abstraction/sdk/dist/src/HttpRpcClient'
 import { ERC4337EthersProvider } from '@account-abstraction/sdk'
 import { MyWalletApi } from '.'
+import { deployments } from 'hardhat';
+import { MyWalletDeployer__factory } from './types'
+import { Greeter__factory } from './types/factories/Greeter__factory'
+
 
 /** Contracts deployed on goerli network */
-const ENTRYPOINT_ADDR = '0x1b98F08dB8F12392EAE339674e568fe29929bC47'
+const ENTRYPOINT_ADDR = '0x2167fA17BA3c80Adee05D98F0B55b666Be6829d6'
 
 const runop = async () => {
   console.log('--- starting runop ---')
   const originalProvider = ethers.provider
   const orignalSigner = originalProvider.getSigner()
   const network = await originalProvider.getNetwork()
+  const {deploy} = deployments;
 
   const entryPointAddress = ENTRYPOINT_ADDR
 
@@ -27,20 +32,31 @@ const runop = async () => {
 
   /** Deploy greeter to test */
   console.log('--- deploying Greeter contract ---')
-  const Greeter_factory = await ethers.getContractFactory('Greeter', orignalSigner)
-  const Greeter = await Greeter_factory.deploy()
-  await Greeter.deployTransaction.wait()
-  console.log('Greeter Address: ', Greeter.address)
+  let Greeter_factory = await ethers.getContractFactory('Greeter', orignalSigner)
+  const { address: GreeterAddress } = await deploy("Greeter", {
+    from: await orignalSigner.getAddress(),
+    gasLimit: 4000000,
+    deterministicDeployment: true
+  })
+
+  let Greeter = Greeter__factory.connect(GreeterAddress, orignalSigner)
+
+  console.log('Greeter Address: ', GreeterAddress)
   console.log('--- end deploying Greeter contract ---')
   /** End Deploy greeter to test */
 
   /** THis is where we create our custom Wallet */
   console.log('--- deploying MyWalletDeployer contract ---')
 
-  const MyWalletDeployer__factory = await ethers.getContractFactory('MyWalletDeployer', orignalSigner)
+  const { address: MyWalletDeployerAddress } = await deploy('MyWalletDeployer', {
+    from: await orignalSigner.getAddress(),
+    gasLimit: 4000000,
+    deterministicDeployment: true
+  });
 
-  const MyWalletDeployer = await MyWalletDeployer__factory.deploy()
-  await MyWalletDeployer.deployTransaction.wait()
+  console.log('MyWalletDeployer Address: ', MyWalletDeployerAddress)
+
+  const MyWalletDeployer = MyWalletDeployer__factory.connect(MyWalletDeployerAddress, orignalSigner)
   const factoryAddress = MyWalletDeployer.address
 
   console.log('Factory address:', factoryAddress)
@@ -75,8 +91,9 @@ const runop = async () => {
   const aaSigner = aaProvier.getSigner()
 
   console.log('SCW address: ', await aaSigner.getAddress())
+  //await new Promise(f => setTimeout(f, 25000));
 
-  Greeter.connect(aaSigner)
+  Greeter = Greeter.connect(aaSigner)
 
   const tx = await Greeter.addGreet({
     value: ethers.utils.parseEther('0'),
@@ -86,6 +103,7 @@ const runop = async () => {
 
   console.log(tx, '=====')
 }
+
 
 runop()
   .then(() => console.log('--- done ---'))

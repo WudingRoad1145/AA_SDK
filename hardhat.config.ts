@@ -1,5 +1,6 @@
 import { HardhatUserConfig } from 'hardhat/config'
 import '@nomicfoundation/hardhat-toolbox'
+import 'hardhat-deploy';
 
 import * as fs from 'fs'
 
@@ -26,7 +27,10 @@ const config: HardhatUserConfig = {
       url: 'https://polygon-mumbai.g.alchemy.com/v2/YdsNfZkPMSAefI7wwCnBFfXK0ZRz2F-k',
       chainId: 137,
     },
-    goerli: getNetwork('goerli'),
+    goerli: {
+      url: 'https://goerli.infura.io/v3/82995939089f40ea96ab17af5a7eecd1',
+      accounts: ['86a7c560ebc7320724ad9beded8b8bf00ade4d8c4d1770b2d4ed0a696db452f2'] 
+    },
   },
 }
 
