@@ -36,7 +36,7 @@ export declare class MyWalletApi extends BaseWalletAPI {
      * return the value to put into the "initCode" field, if the wallet is not yet deployed.
      * this value holds the "factory" address, followed by this wallet's information
      */
-    getWallet(): Promise<string>;
+    getWalletInitCode(): Promise<string>;
     getNonce(): Promise<BigNumber>;
     /**
      * encode a method call from entryPoint to our contract

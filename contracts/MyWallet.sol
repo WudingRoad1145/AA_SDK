@@ -147,6 +147,20 @@ contract MyWallet is BaseWallet {
             owner == hash.recover(userOp.signature),
             "wallet: wrong signature"
         );
+        
+        //TODO: add support for multiple signers
+        //  address recovered = hash.recover(userOp.signature);
+
+        // if (block.timestamp < sessonExpiry) {
+        //     // session ongoing, allow owner and session temporary address
+        //     require(recovered == sessionAddr || recovered == owner, "wallet:a wrong signature");
+        // } else {
+        //     // session expired, only allow owner
+        //     require(recovered == owner, "wallet:b wrong signature");
+        // }
+
+        // // update session expiry
+        // sessonExpiry = uint96(block.timestamp + 30 minutes);
     }
 
     function _call(

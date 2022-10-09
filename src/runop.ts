@@ -4,13 +4,16 @@ import { ethers } from 'hardhat'
 import { HttpRpcClient } from '@account-abstraction/sdk/dist/src/HttpRpcClient'
 import { ERC4337EthersProvider } from '@account-abstraction/sdk'
 import { MyWalletApi } from '.'
+import { MyPaymasterApi } from './MyPaymasterApi'
 import { deployments } from 'hardhat';
 import { MyWalletDeployer__factory } from './types'
 import { Greeter__factory } from './types/factories/Greeter__factory'
+import { NftFullSubsidyPaymaster__factory } from './types/factories/NftFullSubsidyPaymaster__factory'
 
 
 /** Contracts deployed on goerli network */
 const ENTRYPOINT_ADDR = '0x2167fA17BA3c80Adee05D98F0B55b666Be6829d6'
+const PAYMASTER_ADDR = '0x60b7eB00c36bAae69e993188421AFd91095d3125'
 
 const runop = async () => {
   console.log('--- starting runop ---')
@@ -20,6 +23,7 @@ const runop = async () => {
   const {deploy} = deployments;
 
   const entryPointAddress = ENTRYPOINT_ADDR
+  const paymasterAddress = PAYMASTER_ADDR
 
   const providerConfig = {
     entryPointAddress,
@@ -66,12 +70,17 @@ const runop = async () => {
   const walletAddress = await MyWalletDeployer.getDeploymentAddress(entryPointAddress, ownerAddress, 0)
   console.log('--- end deploying MyWalletDeployer contract ---')
 
+  console.log('--- paymaster initialisation ---')
+  const myPaymasterApi = new MyPaymasterApi()
+  console.log('--- end paymaster initialisation ---')
+
   const smartWalletAPI = new MyWalletApi({
     provider: originalProvider,
     entryPointAddress: entryPoint.address,
     walletAddress,
     owner: orignalSigner,
     factoryAddress,
+    paymasterAPI: myPaymasterApi,
   })
 
   /** This marks the end of creation of our custom wallet api */
